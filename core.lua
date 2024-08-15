@@ -14,7 +14,7 @@ function EnabledSongs()
     local enabledSongs = {}
     for key, value in pairs(DejaLustSettings.songs) do
         if value.enabled then
-            enabledSongs[#enabledSongs+1] = value
+            enabledSongs[#enabledSongs + 1] = value
         end
     end
     return enabledSongs
@@ -37,9 +37,9 @@ frame:SetScript("OnEvent", function(self, event, ...)
     -- Loop through player buffs to check if any of the tracked buffs are present
     local isBuffPresent = false
     for i = 1, 40 do
-        name, _, _, _, _, _, _, _, _, id = UnitBuff("Player", i)
-        if not name then break end
-        if DejaLustSettings.buffs[name] ~= nil then
+        local buffData = C_UnitAuras.GetBuffDataByIndex("Player", i)
+        if not buffData or not buffData.name then break end
+        if DejaLustSettings.buffs[buffData.name] ~= nil then
             isBuffPresent = true
             break
         end
@@ -47,7 +47,6 @@ frame:SetScript("OnEvent", function(self, event, ...)
 
     -- Check if buff present and isn't already playing
     if isBuffPresent and isPlaying ~= true then
-
         local songs = EnabledSongs()
         if #songs == 0 then
             return
@@ -77,7 +76,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
             song = songs[math.random(#songs)].file
         end
         PlayMusic("Interface\\AddOns\\DejaLust\\songs\\" .. song)
-     elseif isPlaying and isBuffPresent == false then
+    elseif isPlaying and isBuffPresent == false then
         -- Reset play flag
         isPlaying = false
 
@@ -108,7 +107,8 @@ function DrawSongsSection(container)
 
     local addDescriptionLabel = AceGUI:Create("Label")
     addDescriptionLabel:SetFullWidth(true)
-    addDescriptionLabel:SetText("To add a song enter the name and file name below, make sure to include the extension (e.g. .mp3) and add the song to World of Warcraft\\_retail_\\Interface\\AddOns\\DejaLust\\songs.")
+    addDescriptionLabel:SetText(
+        "To add a song enter the name and file name below, make sure to include the extension (e.g. .mp3) and add the song to World of Warcraft\\_retail_\\Interface\\AddOns\\DejaLust\\songs.")
 
     local restartWarningLabel = AceGUI:Create("Label")
     restartWarningLabel:SetFullWidth(true)
@@ -121,7 +121,8 @@ function DrawSongsSection(container)
     addSongNameEditBox:SetLabel("Song name")
     addSongNameEditBox:SetRelativeWidth(0.4)
     addSongNameEditBox:SetCallback("OnTextChanged", function(editBox)
-        addSongButton:SetDisabled(editBox:GetText() == nil or editBox:GetText() == '' or addFileNameEditBox:GetText() == nil or addFileNameEditBox:GetText() == '')
+        addSongButton:SetDisabled(editBox:GetText() == nil or editBox:GetText() == '' or
+            addFileNameEditBox:GetText() == nil or addFileNameEditBox:GetText() == '')
         editBox:DisableButton(true)
     end)
 
@@ -129,7 +130,8 @@ function DrawSongsSection(container)
     addFileNameEditBox:SetLabel("File name (include extension)")
     addFileNameEditBox:SetRelativeWidth(0.4)
     addFileNameEditBox:SetCallback("OnTextChanged", function(editBox)
-        addSongButton:SetDisabled(editBox:GetText() == nil or editBox:GetText() == '' or addSongNameEditBox:GetText() == nil or addSongNameEditBox:GetText() == '')
+        addSongButton:SetDisabled(editBox:GetText() == nil or editBox:GetText() == '' or
+            addSongNameEditBox:GetText() == nil or addSongNameEditBox:GetText() == '')
         editBox:DisableButton(true)
     end)
 
@@ -138,7 +140,7 @@ function DrawSongsSection(container)
     addSongButton:SetRelativeWidth(0.2)
     addSongButton:SetDisabled(true)
     addSongButton:SetCallback("OnClick", function()
-        DejaLustSettings.songs[#DejaLustSettings.songs+1] = {
+        DejaLustSettings.songs[#DejaLustSettings.songs + 1] = {
             ["name"] = addSongNameEditBox:GetText(),
             ["file"] = addFileNameEditBox:GetText(),
             ["enabled"] = true,
@@ -148,7 +150,8 @@ function DrawSongsSection(container)
         DrawSongsSection(container)
     end)
 
-    songsGroup:AddChildren(addDescriptionLabel, restartWarningLabel, addSongNameEditBox, addFileNameEditBox, addSongButton)
+    songsGroup:AddChildren(addDescriptionLabel, restartWarningLabel, addSongNameEditBox, addFileNameEditBox,
+        addSongButton)
 
     -- Column headings
 
@@ -200,7 +203,6 @@ function DrawSongsSection(container)
 end
 
 function DrawAdditionalOptionsSection(container)
-
     local optionsGroup = AceGUI:Create("InlineGroup")
     optionsGroup:SetTitle("Additional settings")
     optionsGroup:SetRelativeWidth(1.0)
@@ -239,7 +241,6 @@ function DrawAdditionalOptionsSection(container)
 end
 
 function DrawBuffsSection(container)
-
     local scrollFrame = AceGUI:Create("ScrollFrame")
     scrollFrame:SetFullWidth(true)
     scrollFrame:SetFullHeight(true)
@@ -288,22 +289,22 @@ function DrawBuffsSection(container)
 end
 
 local function SelectGroup(container, event, group)
-   container:ReleaseChildren()
-   if group == "songs" then
-      DrawSongsSection(container)
-   elseif group == "buffs" then
-      DrawBuffsSection(container)
-   elseif group == "additional_options" then
-      DrawAdditionalOptionsSection(container)
-   end
+    container:ReleaseChildren()
+    if group == "songs" then
+        DrawSongsSection(container)
+    elseif group == "buffs" then
+        DrawBuffsSection(container)
+    elseif group == "additional_options" then
+        DrawAdditionalOptionsSection(container)
+    end
 end
 
 function ToggleConfig()
-  if configFrame then
-    CloseConfig()
-  else
-    ShowConfig()
-  end
+    if configFrame then
+        CloseConfig()
+    else
+        ShowConfig()
+    end
 end
 
 function ShowConfig()
@@ -313,13 +314,13 @@ function ShowConfig()
 
     -- Create a container frame
     configFrame = AceGUI:Create("Frame")
-    configFrame:SetCallback("OnClose",function(widget)
-     AceGUI:Release(widget)
-     configFrame = nil
+    configFrame:SetCallback("OnClose", function(widget)
+        AceGUI:Release(widget)
+        configFrame = nil
     end)
-    configFrame:SetCallback("OnEscapePressed",function(widget)
-     AceGUI:Release(widget)
-     configFrame = nil
+    configFrame:SetCallback("OnEscapePressed", function(widget)
+        AceGUI:Release(widget)
+        configFrame = nil
     end)
     configFrame:SetTitle("DejaLust config")
     configFrame:SetStatusText("Version: 1.0 - Author: Jovche-Barthilas")
@@ -327,10 +328,10 @@ function ShowConfig()
     configFrame:SetHeight(625)
     configFrame:SetLayout("Fill")
 
-    local tabGroup =  AceGUI:Create("TabGroup")
+    local tabGroup = AceGUI:Create("TabGroup")
     tabGroup:SetLayout("List")
     -- Setup which tabs to show
-    tabGroup:SetTabs({{text="Songs", value="songs"}, {text="Buffs", value="buffs"}, {text="Additional options", value="additional_options"}})
+    tabGroup:SetTabs({ { text = "Songs", value = "songs" }, { text = "Buffs", value = "buffs" }, { text = "Additional options", value = "additional_options" } })
     -- Register callback
     tabGroup:SetCallback("OnGroupSelected", SelectGroup)
     -- Set initial Tab (this will fire the OnGroupSelected callback)
@@ -340,7 +341,7 @@ function ShowConfig()
 end
 
 function CloseConfig()
-  configFrame = nil
+    configFrame = nil
 end
 
 ---------------------------------------------------------
@@ -350,5 +351,5 @@ end
 SLASH_DEJALUST1 = "/dejalust";
 
 function SlashCmdList.DEJALUST(msg)
-   ShowConfig()
+    ShowConfig()
 end
